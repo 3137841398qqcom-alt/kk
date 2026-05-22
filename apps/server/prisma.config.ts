@@ -6,6 +6,8 @@ export default defineConfig({
     path: "prisma/migrations",
   },
   datasource: {
-    url: process.env.DATABASE_URL || "file:../data/music.db",
+    url:
+      process.env.DATABASE_URL ||
+      "postgresql://user:password@ep-xxxx.us-east-2.aws.neon.tech/dbname?sslmode=require",
   },
 });

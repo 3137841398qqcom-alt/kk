@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { Play, Music, Heart } from "lucide-react";
+import { Play, Music, Heart, ListPlus } from "lucide-react";
+import { useAudioContext } from "../context/AudioContext";
 
 const stagger = {
   animate: { transition: { staggerChildren: 0.05 } },
@@ -10,7 +11,9 @@ const itemFade = {
   animate: { opacity: 1, x: 0 },
 };
 
-export default function Playlist({ songs, currentIndex, likes, onSelect, onToggleLike }) {
+export default function Playlist({ songs, onSelect }) {
+  const { currentIndex, likes, toggleLike, addToQueue, songs: allSongs } = useAudioContext();
+
   if (songs.length === 0) {
     return (
       <div className="playlist">
@@ -28,12 +31,14 @@ export default function Playlist({ songs, currentIndex, likes, onSelect, onToggl
       <h3 className="playlist-title">Playlist ({songs.length})</h3>
       <motion.ul className="song-list" {...stagger}>
         {songs.map((song, i) => {
-          const isActive = i === currentIndex;
+          const isActive = allSongs.indexOf(song) === currentIndex;
           const displayName = song.title || song.name.replace(/\.[^.]+$/, "");
           const artist = song.artist || "";
+          const songName = song.name;
+          const originalIndex = allSongs.findIndex((s) => s.name === songName);
           return (
             <motion.li
-              key={song.name || i}
+              key={songName || i}
               className={`song-item${isActive ? " active" : ""}`}
               onClick={() => onSelect(i)}
               {...itemFade}
@@ -47,13 +52,23 @@ export default function Playlist({ songs, currentIndex, likes, onSelect, onToggl
                 {artist && <span className="song-artist">{artist}</span>}
               </div>
               <button
-                className={`list-like-btn${likes?.includes(song.name) ? " liked" : ""}`}
+                className="list-action-btn"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onToggleLike?.(song.name);
+                  addToQueue(originalIndex);
+                }}
+                title="Add to queue"
+              >
+                <ListPlus size={14} />
+              </button>
+              <button
+                className={`list-like-btn${likes?.includes(songName) ? " liked" : ""}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleLike?.(songName);
                 }}
               >
-                <Heart size={14} fill={likes?.includes(song.name) ? "currentColor" : "none"} />
+                <Heart size={14} fill={likes?.includes(songName) ? "currentColor" : "none"} />
               </button>
             </motion.li>
           );

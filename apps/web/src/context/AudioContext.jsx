@@ -1,4 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+
+const AudioContext = createContext(null);
 
 const STORAGE_KEY = "music-player";
 
@@ -19,7 +21,7 @@ function saveStorage(data) {
   }
 }
 
-export default function useAudio() {
+export function AudioProvider({ children }) {
   const [songs, setSongs] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -32,6 +34,7 @@ export default function useAudio() {
   const [metadata, setMetadata] = useState({});
   const [loading, setLoading] = useState(false);
   const [likes, setLikes] = useState(() => loadStorage().likes || []);
+  const [queue, setQueue] = useState([]);
 
   const audioRef = useRef(new Audio());
   const playNextRef = useRef(null);
@@ -43,12 +46,9 @@ export default function useAudio() {
     saveStorage({ ...current, ...patch });
   }, []);
 
-  // Persist volume
   useEffect(() => {
     persist({ volume });
   }, [volume, persist]);
-
-  // Persist likes
   useEffect(() => {
     persist({ likes });
   }, [likes, persist]);
@@ -79,7 +79,6 @@ export default function useAudio() {
       audioRef.current.src = song.url;
       audioRef.current.load();
 
-      // Restore saved position if resuming same song
       if (restoreTimeRef.current !== null && !isAutoPlaying.current) {
         const resumeTime = restoreTimeRef.current;
         audioRef.current.addEventListener("loadedmetadata", function resume() {
@@ -104,10 +103,16 @@ export default function useAudio() {
 
   const playNext = useCallback(() => {
     if (songs.length === 0) return;
-    const next = (currentIndex + 1) % songs.length;
     isAutoPlaying.current = true;
-    play(next);
-  }, [currentIndex, songs, play]);
+    if (queue.length > 0) {
+      const [next, ...rest] = queue;
+      setQueue(rest);
+      play(next);
+    } else {
+      const next = (currentIndex + 1) % songs.length;
+      play(next);
+    }
+  }, [currentIndex, songs, play, queue]);
 
   const playPrev = useCallback(() => {
     if (songs.length === 0) return;
@@ -148,14 +153,22 @@ export default function useAudio() {
 
   const toggleLike = useCallback((trackName) => {
     setLikes((prev) => {
-      if (prev.includes(trackName)) {
-        return prev.filter((n) => n !== trackName);
-      }
+      if (prev.includes(trackName)) return prev.filter((n) => n !== trackName);
       return [...prev, trackName];
     });
   }, []);
 
   const isLiked = useCallback((trackName) => likes.includes(trackName), [likes]);
+
+  const addToQueue = useCallback((index) => {
+    setQueue((prev) => [...prev, index]);
+  }, []);
+
+  const removeFromQueue = useCallback((queueIndex) => {
+    setQueue((prev) => prev.filter((_, i) => i !== queueIndex));
+  }, []);
+
+  const clearQueue = useCallback(() => setQueue([]), []);
 
   // Save playback state periodically
   useEffect(() => {
@@ -174,17 +187,14 @@ export default function useAudio() {
   // Audio event listeners
   useEffect(() => {
     const audio = audioRef.current;
-
     const onTimeUpdate = () => setCurrentTime(audio.currentTime);
     const onLoadedMetadata = () => setDuration(audio.duration);
     const onEnded = () => playNextRef.current?.();
-
     audio.addEventListener("timeupdate", onTimeUpdate);
     audio.addEventListener("loadedmetadata", onLoadedMetadata);
     audio.addEventListener("ended", onEnded);
     audio.volume = volume;
 
-    // Restore last session
     const stored = loadStorage();
     if (stored.lastIndex >= 0 && stored.lastTime > 0) {
       restoreTimeRef.current = stored.lastTime;
@@ -193,12 +203,8 @@ export default function useAudio() {
     loadSongs();
 
     return () => {
-      // Save position on unmount
       if (currentIndex >= 0) {
-        persist({
-          lastTime: audio.currentTime,
-          lastIndex: currentIndex,
-        });
+        persist({ lastTime: audio.currentTime, lastIndex: currentIndex });
       }
       audio.removeEventListener("timeupdate", onTimeUpdate);
       audio.removeEventListener("loadedmetadata", onLoadedMetadata);
@@ -207,7 +213,7 @@ export default function useAudio() {
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
-  return {
+  const value = {
     songs,
     currentSong,
     currentIndex,
@@ -218,6 +224,7 @@ export default function useAudio() {
     metadata,
     loading,
     likes,
+    queue,
     loadSongs,
     play,
     togglePlay,
@@ -227,5 +234,16 @@ export default function useAudio() {
     setVolume: setVolumeLevel,
     toggleLike,
     isLiked,
+    addToQueue,
+    removeFromQueue,
+    clearQueue,
   };
+
+  return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>;
+}
+
+export function useAudioContext() {
+  const ctx = useContext(AudioContext);
+  if (!ctx) throw new Error("useAudioContext must be used within AudioProvider");
+  return ctx;
 }

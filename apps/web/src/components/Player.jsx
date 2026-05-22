@@ -1,90 +1,129 @@
-import { useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { PlayButton, ProgressBar } from "@music-player/ui";
-import { SkipBack, SkipForward, Music, Disc, Volume2, Volume1, VolumeX, Heart } from "lucide-react";
+import {
+  SkipBack,
+  SkipForward,
+  Music,
+  Disc,
+  Volume2,
+  Volume1,
+  VolumeX,
+  Heart,
+  ListMusic,
+} from "lucide-react";
+import { useAudioContext } from "../context/AudioContext";
 
-export default function Player({
-  currentSong,
-  metadata,
-  isPlaying,
-  currentTime,
-  duration,
-  volume,
-  loading,
-  onTogglePlay,
-  onNext,
-  onPrev,
-  onSeek,
-  onVolumeChange,
-  isLiked,
-  onToggleLike,
-}) {
+export default function Player() {
+  const {
+    currentSong,
+    metadata,
+    isPlaying,
+    currentTime,
+    duration,
+    volume,
+    loading,
+    togglePlay,
+    playNext,
+    playPrev,
+    seek,
+    setVolume,
+    isLiked,
+    toggleLike,
+  } = useAudioContext();
+
+  const [showVolume, setShowVolume] = useState(false);
   const volumeRef = useRef(null);
+  const volumeTimeout = useRef(null);
 
   const handleVolumeClick = (e) => {
     if (!volumeRef.current) return;
     const rect = volumeRef.current.getBoundingClientRect();
     const ratio = (e.clientX - rect.left) / rect.width;
-    onVolumeChange(Math.max(0, Math.min(1, ratio)));
+    setVolume(Math.max(0, Math.min(1, ratio)));
+  };
+
+  const handleVolumeEnter = () => {
+    if (volumeTimeout.current) clearTimeout(volumeTimeout.current);
+    setShowVolume(true);
+  };
+  const handleVolumeLeave = () => {
+    volumeTimeout.current = setTimeout(() => setShowVolume(false), 600);
   };
 
   useEffect(() => {
     const handleKey = (e) => {
       if (e.code === "Space" && e.target === document.body) {
         e.preventDefault();
-        onTogglePlay();
+        togglePlay();
       }
     };
     window.addEventListener("keydown", handleKey);
     return () => window.removeEventListener("keydown", handleKey);
-  }, [onTogglePlay]);
+  }, [togglePlay]);
 
   const VolumeIcon = volume === 0 ? VolumeX : volume < 0.5 ? Volume1 : Volume2;
 
   const title = metadata?.title || currentSong?.name || "No Track Selected";
-  const artist = metadata?.artist || "Unknown Artist";
-  const album = metadata?.album || "Unknown Album";
+  const artist = metadata?.artist || "";
 
   return (
-    <div className="player">
-      <div className="player-cover">
-        <div className="cover-placeholder">
-          {currentSong ? <Music size={48} /> : <Disc size={48} />}
-        </div>
+    <div className="bottom-player">
+      <div className="bottom-progress">
+        <ProgressBar variant="thin" currentTime={currentTime} duration={duration} onSeek={seek} />
       </div>
 
-      <div className="player-info">
-        <div className="track-header">
-          <h2 className="track-title">{title}</h2>
+      <div className="bottom-player-inner">
+        <div className="bottom-player-left">
+          <div className="bottom-cover">
+            <div className="bottom-cover-placeholder">
+              {currentSong ? <Music size={24} /> : <Disc size={24} />}
+            </div>
+          </div>
+          <div className="bottom-track-info">
+            <span className="bottom-track-title">{title}</span>
+            {artist && <span className="bottom-track-artist">{artist}</span>}
+          </div>
           {currentSong && (
             <button
-              className={`like-btn${isLiked?.(currentSong.name) ? " liked" : ""}`}
-              onClick={() => onToggleLike?.(currentSong.name)}
+              className={`bottom-like-btn${isLiked?.(currentSong.name) ? " liked" : ""}`}
+              onClick={() => toggleLike?.(currentSong.name)}
               title="Like"
             >
-              <Heart size={20} fill={isLiked?.(currentSong.name) ? "currentColor" : "none"} />
+              <Heart size={16} fill={isLiked?.(currentSong.name) ? "currentColor" : "none"} />
             </button>
           )}
         </div>
-        <p className="track-artist">{artist}</p>
-        <p className="track-album">{album}</p>
-      </div>
 
-      <ProgressBar currentTime={currentTime} duration={duration} onSeek={onSeek} />
+        <div className="bottom-player-center">
+          <button className="bottom-ctrl-btn" onClick={playPrev} title="Previous">
+            <SkipBack size={18} />
+          </button>
+          <PlayButton isPlaying={isPlaying} loading={loading} onClick={togglePlay} />
+          <button className="bottom-ctrl-btn" onClick={playNext} title="Next">
+            <SkipForward size={18} />
+          </button>
+        </div>
 
-      <div className="controls">
-        <button className="ctrl-btn" onClick={onPrev} title="Previous">
-          <SkipBack />
-        </button>
-        <PlayButton isPlaying={isPlaying} loading={loading} onClick={onTogglePlay} />
-        <button className="ctrl-btn" onClick={onNext} title="Next">
-          <SkipForward />
-        </button>
-      </div>
-
-      <div className="volume-control">
-        <VolumeIcon size={18} className="volume-icon" />
-        <div className="volume-bar" ref={volumeRef} onClick={handleVolumeClick}>
-          <div className="volume-fill" style={{ width: `${volume * 100}%` }} />
+        <div className="bottom-player-right">
+          <div
+            className="bottom-volume-wrap"
+            onMouseEnter={handleVolumeEnter}
+            onMouseLeave={handleVolumeLeave}
+          >
+            <button className="bottom-ctrl-btn volume-btn" title="Volume">
+              <VolumeIcon size={18} />
+            </button>
+            {showVolume && (
+              <div className="volume-popup">
+                <div className="volume-bar" ref={volumeRef} onClick={handleVolumeClick}>
+                  <div className="volume-fill" style={{ width: `${volume * 100}%` }} />
+                </div>
+              </div>
+            )}
+          </div>
+          <button className="bottom-ctrl-btn" title="Queue">
+            <ListMusic size={18} />
+          </button>
         </div>
       </div>
     </div>

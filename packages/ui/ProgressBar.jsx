@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { formatTime } from "@music-player/shared";
 
-export default function ProgressBar({ currentTime, duration, onSeek }) {
+export default function ProgressBar({ currentTime, duration, onSeek, variant }) {
   const barRef = useRef(null);
   const progress = duration ? (currentTime / duration) * 100 : 0;
 
@@ -12,16 +12,27 @@ export default function ProgressBar({ currentTime, duration, onSeek }) {
     onSeek(ratio * duration);
   };
 
+  const isThin = variant === "thin";
+
   return (
-    <div className="progress-container" ref={barRef} onClick={handleClick}>
-      <div className="progress-bar">
-        <div className="progress-fill" style={{ width: `${progress}%` }} />
+    <div
+      className={`progress-container${isThin ? " progress-thin" : ""}`}
+      ref={barRef}
+      onClick={handleClick}
+    >
+      <div className={`progress-bar${isThin ? " progress-bar-thin" : ""}`}>
+        <div
+          className={`progress-fill${isThin ? " progress-fill-thin" : ""}`}
+          style={{ width: `${progress}%` }}
+        />
         <div className="progress-thumb" style={{ left: `${progress}%` }} />
       </div>
-      <div className="time-display">
-        <span>{formatTime(currentTime)}</span>
-        <span>{formatTime(duration)}</span>
-      </div>
+      {!isThin && (
+        <div className="time-display">
+          <span>{formatTime(currentTime)}</span>
+          <span>{formatTime(duration)}</span>
+        </div>
+      )}
     </div>
   );
 }

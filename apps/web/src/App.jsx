@@ -1,9 +1,10 @@
 import { useState, useMemo, useCallback } from "react";
 import { motion } from "framer-motion";
-import useAudio from "./hooks/useAudio";
+import { useAudioContext } from "./context/AudioContext";
 import Player from "./components/Player";
 import Playlist from "./components/Playlist";
 import SearchBar from "./components/SearchBar";
+import QueuePanel from "./components/QueuePanel";
 import "./App.css";
 
 const fadeUp = {
@@ -12,26 +13,7 @@ const fadeUp = {
 };
 
 function App() {
-  const {
-    songs,
-    currentSong,
-    isPlaying,
-    currentTime,
-    duration,
-    volume,
-    metadata,
-    loading,
-    likes,
-    play,
-    togglePlay,
-    playNext,
-    playPrev,
-    seek,
-    setVolume,
-    toggleLike,
-    isLiked,
-  } = useAudio();
-
+  const { songs, play } = useAudioContext();
   const [query, setQuery] = useState("");
 
   const filtered = useMemo(() => {
@@ -45,7 +27,6 @@ function App() {
     });
   }, [songs, query]);
 
-  // Map filtered index back to original song index
   const handleSelect = useCallback(
     (filteredIndex) => {
       const song = filtered[filteredIndex];
@@ -71,32 +52,15 @@ function App() {
       </motion.div>
 
       <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.1 }}>
-        <Player
-          currentSong={currentSong}
-          metadata={metadata}
-          isPlaying={isPlaying}
-          currentTime={currentTime}
-          duration={duration}
-          volume={volume}
-          loading={loading}
-          onTogglePlay={togglePlay}
-          onNext={playNext}
-          onPrev={playPrev}
-          onSeek={seek}
-          onVolumeChange={setVolume}
-          isLiked={isLiked}
-          onToggleLike={toggleLike}
-        />
+        <Player />
+      </motion.div>
+
+      <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.15 }}>
+        <QueuePanel />
       </motion.div>
 
       <motion.div {...fadeUp} transition={{ duration: 0.4, delay: 0.2 }}>
-        <Playlist
-          songs={filtered}
-          currentIndex={songs.indexOf(currentSong)}
-          likes={likes}
-          onSelect={handleSelect}
-          onToggleLike={toggleLike}
-        />
+        <Playlist songs={filtered} onSelect={handleSelect} />
       </motion.div>
     </div>
   );
