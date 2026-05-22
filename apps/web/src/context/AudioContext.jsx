@@ -34,6 +34,7 @@ export function AudioProvider({ children }) {
   const [metadata, setMetadata] = useState({});
   const [loading, setLoading] = useState(false);
   const [likes, setLikes] = useState(() => loadStorage().likes || []);
+  const [history, setHistory] = useState(() => loadStorage().history || []);
   const [queue, setQueue] = useState([]);
 
   const audioRef = useRef(new Audio());
@@ -78,6 +79,18 @@ export function AudioProvider({ children }) {
       setCurrentIndex(index);
       audioRef.current.src = song.url;
       audioRef.current.load();
+
+      setHistory((prev) => {
+        const entry = {
+          name: song.name || "",
+          title: song.title || song.name || "",
+          artist: song.artist || "",
+          album: song.album || "",
+          playedAt: Date.now(),
+        };
+        const filtered = prev.filter((h) => h.name !== entry.name);
+        return [entry, ...filtered].slice(0, 50);
+      });
 
       if (restoreTimeRef.current !== null && !isAutoPlaying.current) {
         const resumeTime = restoreTimeRef.current;
@@ -160,6 +173,8 @@ export function AudioProvider({ children }) {
 
   const isLiked = useCallback((trackName) => likes.includes(trackName), [likes]);
 
+  const clearHistory = useCallback(() => setHistory([]), []);
+
   const addToQueue = useCallback((index) => {
     setQueue((prev) => [...prev, index]);
   }, []);
@@ -224,6 +239,7 @@ export function AudioProvider({ children }) {
     metadata,
     loading,
     likes,
+    history,
     queue,
     loadSongs,
     play,
@@ -237,6 +253,7 @@ export function AudioProvider({ children }) {
     addToQueue,
     removeFromQueue,
     clearQueue,
+    clearHistory,
   };
 
   return <AudioContext.Provider value={value}>{children}</AudioContext.Provider>;

@@ -11,6 +11,7 @@ import {
   VolumeX,
   Heart,
   Search,
+  Library,
 } from "lucide-react";
 import { useAudioContext } from "../context/AudioContext";
 
@@ -123,6 +124,9 @@ export default function Player() {
               </div>
             )}
           </div>
+          <button className="bottom-ctrl-btn" title="Library" onClick={() => navigate("/library")}>
+            <Library size={18} />
+          </button>
           <button className="bottom-ctrl-btn" title="Search" onClick={() => navigate("/search")}>
             <Search size={18} />
           </button>

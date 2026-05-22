@@ -919,3 +919,36 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Library */
+.library-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: #f3f4f6;
+  margin: 0;
+}
+
+.library-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 12px;
+}
+
+.playlist-create-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: #6366f1;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.playlist-create-btn:hover {
+  background: #4f46e5;
+}

@@ -6,6 +6,7 @@ import Player from "./components/Player";
 import Playlist from "./components/Playlist";
 import SearchBar from "./components/SearchBar";
 import SearchPage from "./components/SearchPage";
+import LibraryPage from "./components/LibraryPage";
 import QueuePanel from "./components/QueuePanel";
 import "./App.css";
 
@@ -74,6 +75,7 @@ function App() {
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/search" element={<SearchPage />} />
+        <Route path="/library" element={<LibraryPage />} />
       </Routes>
     </BrowserRouter>
   );
