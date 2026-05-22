@@ -1,0 +1,10 @@
+[
+  {
+    "name": "sample.mp3",
+    "title": "Sample Track",
+    "artist": "Unknown Artist",
+    "album": "Demo Album",
+    "duration": 180,
+    "url": "/music/sample.mp3"
+  }
+]

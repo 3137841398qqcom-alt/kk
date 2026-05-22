@@ -1,0 +1,10 @@
+node_modules
+dist
+build
+.generated
+.next
+.env
+*.db
+*.sqlite
+data
+.vercel
