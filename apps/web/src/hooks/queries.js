@@ -28,6 +28,19 @@ export function useSearchQuery(q, type = "track") {
   });
 }
 
+export function useNewReleasesQuery(limit = 12) {
+  return useQuery({
+    queryKey: ["new-releases", limit],
+    queryFn: async () => {
+      const res = await fetch(`/api/browse/new-releases?limit=${limit}`);
+      if (!res.ok) throw new Error("New releases failed");
+      return res.json();
+    },
+    staleTime: 10 * 60 * 1000,
+    placeholderData: () => ({ albums: [] }),
+  });
+}
+
 export function useRecommendationsQuery(seeds = {}) {
   const params = new URLSearchParams();
   if (seeds.tracks) params.set("seed_tracks", seeds.tracks);

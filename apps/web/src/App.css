@@ -952,3 +952,166 @@
 .playlist-create-btn:hover {
   background: #4f46e5;
 }
+
+/* Home Page */
+.home {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 24px;
+  padding-bottom: 100px;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.home-header {
+  margin-bottom: 32px;
+}
+
+.home-greeting {
+  font-size: 32px;
+  font-weight: 700;
+  color: #f3f4f6;
+  margin: 0;
+}
+
+.home-section {
+  margin-bottom: 32px;
+}
+
+.home-section-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #f3f4f6;
+  margin-bottom: 16px;
+}
+
+.home-section-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.home-section-header svg {
+  color: #a5b4fc;
+}
+
+.home-scroll {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  scrollbar-width: none;
+}
+
+.home-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.home-card {
+  flex-shrink: 0;
+  width: 156px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.home-card:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.home-card-cover {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 6px;
+  overflow: hidden;
+  background: linear-gradient(135deg, #1e1b4b, #4338ca);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #a5b4fc;
+  position: relative;
+}
+
+.home-card-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.home-card-play {
+  position: absolute;
+  bottom: 6px;
+  right: 6px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #22c55e;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: translateY(6px);
+  transition:
+    opacity 0.2s,
+    transform 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+}
+
+.home-card:hover .home-card-play {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.home-card-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #f3f4f6;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-card-sub {
+  font-size: 11px;
+  color: #9ca3af;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.home-quick-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  color: #d1d5db;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.home-quick-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f3f4f6;
+}
+
+.home-spacer {
+  height: 24px;
+}
