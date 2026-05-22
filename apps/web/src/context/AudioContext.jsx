@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useRef, useCallback } from "react";
+import { useSongsQuery } from "../hooks/queries";
 
 const AudioContext = createContext(null);
 
@@ -22,7 +23,7 @@ function saveStorage(data) {
 }
 
 export function AudioProvider({ children }) {
-  const [songs, setSongs] = useState([]);
+  const { data: songs = [] } = useSongsQuery();
   const [currentIndex, setCurrentIndex] = useState(-1);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -53,16 +54,6 @@ export function AudioProvider({ children }) {
   useEffect(() => {
     persist({ likes });
   }, [likes, persist]);
-
-  const loadSongs = useCallback(async () => {
-    try {
-      const res = await fetch("/api/songs");
-      const data = await res.json();
-      setSongs(data);
-    } catch {
-      setSongs([]);
-    }
-  }, []);
 
   const currentSong = songs[currentIndex] || null;
 
@@ -215,8 +206,6 @@ export function AudioProvider({ children }) {
       restoreTimeRef.current = stored.lastTime;
     }
 
-    loadSongs();
-
     return () => {
       if (currentIndex >= 0) {
         persist({ lastTime: audio.currentTime, lastIndex: currentIndex });
@@ -241,7 +230,6 @@ export function AudioProvider({ children }) {
     likes,
     history,
     queue,
-    loadSongs,
     play,
     togglePlay,
     playNext,

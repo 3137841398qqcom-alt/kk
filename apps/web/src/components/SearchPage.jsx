@@ -1,9 +1,10 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, X, Music, Disc, User, Clock } from "lucide-react";
+import { Search, X, Music, Disc, User } from "lucide-react";
 import { useAudioContext } from "../context/AudioContext";
 import { useNavigate } from "react-router-dom";
 import { formatTime } from "@music-player/shared";
+import { useSearchQuery } from "../hooks/queries";
 
 const TABS = [
   { key: "track", label: "Songs", icon: Music },
@@ -13,76 +14,42 @@ const TABS = [
 
 export default function SearchPage() {
   const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
   const [activeTab, setActiveTab] = useState("track");
-  const [results, setResults] = useState({ tracks: [], albums: [], artists: [] });
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
   const inputRef = useRef(null);
   const debounceRef = useRef(null);
-  const { play, songs, currentSong } = useAudioContext();
+  const { play, songs } = useAudioContext();
   const navigate = useNavigate();
+
+  const { data, isLoading } = useSearchQuery(debouncedQuery, activeTab);
+  const results = data?.[activeTab + "s"] || [];
+  const searched = debouncedQuery.trim().length > 0;
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const doSearch = useCallback(
-    async (q) => {
-      if (!q.trim()) {
-        setResults({ tracks: [], albums: [], artists: [] });
-        setSearched(false);
-        return;
-      }
-      setLoading(true);
-      setSearched(true);
-      try {
-        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}&type=${activeTab}`);
-        const data = await res.json();
-        setResults((prev) => ({ ...prev, [activeTab + "s"]: data[activeTab + "s"] || [] }));
-      } catch {
-        setResults((prev) => ({ ...prev, [activeTab + "s"]: [] }));
-      }
-      setLoading(false);
-    },
-    [activeTab],
-  );
-
   const handleInput = (e) => {
     const val = e.target.value;
     setQuery(val);
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => doSearch(val), 300);
+    debounceRef.current = setTimeout(() => setDebouncedQuery(val), 300);
   };
 
   const handleClear = () => {
     setQuery("");
-    setResults({ tracks: [], albums: [], artists: [] });
-    setSearched(false);
+    setDebouncedQuery("");
     inputRef.current?.focus();
   };
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    if (query.trim()) {
-      setLoading(true);
-      fetch(`/api/search?q=${encodeURIComponent(query)}&type=${tab}`)
-        .then((r) => r.json())
-        .then((data) => {
-          setResults((prev) => ({ ...prev, [tab + "s"]: data[tab + "s"] || [] }));
-          setLoading(false);
-        })
-        .catch(() => setLoading(false));
-    }
   };
 
   const handlePlayTrack = (track) => {
     const idx = songs.findIndex((s) => s.name === track.name);
-    if (idx >= 0) {
-      play(idx);
-    }
+    if (idx >= 0) play(idx);
   };
-
-  const data = results[activeTab + "s"] || [];
 
   return (
     <div className="search-page">
@@ -124,20 +91,20 @@ export default function SearchPage() {
       <div className="search-results">
         {!searched && <p className="search-placeholder">Search for songs, albums, or artists</p>}
 
-        {loading && (
+        {isLoading && (
           <div className="search-loading">
             <div className="search-spinner" />
           </div>
         )}
 
-        {!loading && searched && data.length === 0 && (
+        {!isLoading && searched && results.length === 0 && (
           <p className="search-empty">
-            No {activeTab}s found for "{query}"
+            No {activeTab}s found for "{debouncedQuery}"
           </p>
         )}
 
         <AnimatePresence mode="wait">
-          {!loading && data.length > 0 && (
+          {!isLoading && results.length > 0 && (
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 8 }}
@@ -147,7 +114,7 @@ export default function SearchPage() {
             >
               {activeTab === "track" && (
                 <ul className="search-track-list">
-                  {data.map((t, i) => (
+                  {results.map((t, i) => (
                     <li
                       key={t.id || i}
                       className="search-track-item"
@@ -170,7 +137,7 @@ export default function SearchPage() {
 
               {activeTab === "album" && (
                 <div className="search-grid">
-                  {data.map((a) => (
+                  {results.map((a) => (
                     <div key={a.id} className="search-card">
                       <div className="search-card-cover">
                         {a.cover ? <img src={a.cover} alt={a.name} /> : <Disc size={48} />}
@@ -184,7 +151,7 @@ export default function SearchPage() {
 
               {activeTab === "artist" && (
                 <div className="search-grid">
-                  {data.map((a) => (
+                  {results.map((a) => (
                     <div key={a.id} className="search-card">
                       <div className={`search-card-cover artist${a.image ? "" : " placeholder"}`}>
                         {a.image ? <img src={a.image} alt={a.name} /> : <User size={48} />}

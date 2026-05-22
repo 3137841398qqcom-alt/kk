@@ -14,6 +14,7 @@
     "@fontsource-variable/geist": "^5.2.9",
     "@music-player/shared": "*",
     "@music-player/ui": "*",
+    "@tanstack/react-query": "^5.100.11",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "framer-motion": "^12.40.0",
