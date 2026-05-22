@@ -1,9 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useAudioContext } from "./context/AudioContext";
 import Player from "./components/Player";
 import Playlist from "./components/Playlist";
 import SearchBar from "./components/SearchBar";
+import SearchPage from "./components/SearchPage";
 import QueuePanel from "./components/QueuePanel";
 import "./App.css";
 
@@ -12,7 +14,7 @@ const fadeUp = {
   animate: { opacity: 1, y: 0 },
 };
 
-function App() {
+function HomePage() {
   const { songs, play } = useAudioContext();
   const [query, setQuery] = useState("");
 
@@ -63,6 +65,17 @@ function App() {
         <Playlist songs={filtered} onSelect={handleSelect} />
       </motion.div>
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<HomePage />} />
+        <Route path="/search" element={<SearchPage />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { PlayButton, ProgressBar } from "@music-player/ui";
 import {
   SkipBack,
@@ -9,11 +10,12 @@ import {
   Volume1,
   VolumeX,
   Heart,
-  ListMusic,
+  Search,
 } from "lucide-react";
 import { useAudioContext } from "../context/AudioContext";
 
 export default function Player() {
+  const navigate = useNavigate();
   const {
     currentSong,
     metadata,
@@ -121,8 +123,8 @@ export default function Player() {
               </div>
             )}
           </div>
-          <button className="bottom-ctrl-btn" title="Queue">
-            <ListMusic size={18} />
+          <button className="bottom-ctrl-btn" title="Search" onClick={() => navigate("/search")}>
+            <Search size={18} />
           </button>
         </div>
       </div>
