@@ -3,7 +3,7 @@ dist
 build
 .generated
 .next
-.env
+.env*
 *.db
 *.sqlite
 data
